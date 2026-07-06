@@ -1,0 +1,17 @@
+Blender:
+
+import bpy
+import numpy as np
+img = bpy.data.images.load(r"C:\Users\Mateusz\Desktop\3D\rynek-lubliniec\assets\lightmap_sunset.exr")
+w, h = img.size[0], img.size[1]
+rgba_array = np.empty(w * h * 4, dtype=np.float32)
+img.pixels.foreach_get(rgba_array)
+rgba_matrix = rgba_array.reshape((h, w, 4)) # Shape as a structured 2D image matrix
+rgba_matrix = rgba_matrix[::-1, :, :] 
+rgba_flat = rgba_matrix.reshape((w * h, 4))
+rgb_half = rgba_flat[:, :3].astype(np.float16)
+rgb_half.tofile(r"C:\Users\Mateusz\Desktop\3D\rynek-lubliniec\assets\lightmap_sunset.raw")
+
+KTX-Software 5.0.0:
+
+ktx create --format R16G16B16_SFLOAT --raw --width 8192 --height 8192 --encode uastc-hdr-4x4 --zstd 15 lightmap_sunset.raw lightmap_sunset.ktx2

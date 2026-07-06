@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="google-site-verification" content="YQT6P2iniMZD8s2DBuQNu4vmsoWQILUkwpG_hn5gpOE">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="style.css">
+    <script type="importmap">
+    {
+        "imports": {
+        "three": "https://unpkg.com/three/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three/examples/jsm/"
+        }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Lubliniec w 3D",
+        "url": "https://rynek-lubliniec.github.io"
+    }
+    </script>
+    <title>Rynek w Lublińcu - Wizualizacja 3D</title>
+    <meta name="description" content="Zobacz interaktywną wizualizację 3D rynku w Lublińcu. Odkryj architekturę i układ urbanistyczny miasta w trójwymiarze bez wychodzenia z domu!">
+</head>
+<body>
+    <div id="loadingScreen">
+        <div></div>
+        <p id="loading-text">ładowanie...</p>
+    </div>
+
+    <div class="qualitySwitch UIButton">
+        <div class="quality" data-value="0" title="Niska Jakość">SD</div>
+        <div class="quality" data-value="1" title="Wyskoa Jakość">HD</div>
+        <div class="qualityHandle">SD</div>
+    </div>
+
+    <div class="todSwitch UIButton">
+        <div class="TOD" data-value="0" title="Wschód">
+            <img src="timeSwitchMorning.png">
+        </div>
+        <div class="TOD" data-value="1" title="Północ">
+            <img src="timeSwitchNoon.png">
+        </div>
+        <div class="TOD" data-value="2" title="Zachód">
+            <img src="timeSwitchSunset.png">
+        </div>
+        <div class="TODhandle">
+            <img src="timeSwitchMorning.png" class="TODicon0" style="opacity: 1; transform: scale(1);">
+            <img src="timeSwitchNoon.png" class="TODicon1">
+            <img src="timeSwitchSunset.png" class="TODicon2">
+        </div>
+    </div>
+
+    <div class="menuButton UIButton">
+        <div class="ham1"></div>
+        <div class="ham2"></div>
+        <div class="ham3"></div>
+    </div>
+
+    <section class="sideMenu">
+        <h1>Rynek w Lublińcu</h1>
+        <p>Rynek Główny w Lublińcu położony jest w centrum starówki Lublińca.<br><br>Oficjalnie Plac Konrada Mańki. Nazwę tę otrzymał w 1945 roku. Odchodzą od niego ulice Edyty Stein, Józefa Lompy, Niedurnego i Cicha. Od strony południowej połączony jest z Małym Rynkiem, czyli Placem Mikołaja Kopernika (są złączone przejściem między kamienicami), a od strony północno-zachodniej z placem Cichym – zwanym Rynkiem Solnym (jest z nim złączony wąskim przejściem). W jego obrębie znajdują się sklepy oraz kawiarnie. Rynek Główny jest miejscem, w którym odbywają się liczne uroczystości i festiwale miejskie. Znajduje się na nim pomnik przyrody i pomnik św. Jana Nepomucena. </p>
+        <a href="https://pl.wikipedia.org/wiki/Rynek_G%C5%82%C3%B3wny_w_Lubli%C5%84cu" target="_blank">(Wikipedia)</a>
+    </section>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
