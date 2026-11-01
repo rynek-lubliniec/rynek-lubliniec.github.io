@@ -27,21 +27,17 @@
 </head>
 <body>
     <div id="loadingScreen">
-        <div></div>
         <p id="loading-text">ładowanie...</p>
+        <div class="loadingBar"><div class="loadingBarFill"></div></div>
     </div>
 
-    <div class="qualitySwitch UIButton">
-        <div class="quality" data-value="0" title="Niska Jakość">SD</div>
-        <div class="quality" data-value="1" title="Wyskoa Jakość">HD</div>
-        <div class="qualityHandle">SD</div>
-    </div>
+    <button class="viewModeButton UIButton"><span>Widok z ziemi</span></button>
 
     <div class="todSwitch UIButton">
         <div class="TOD" data-value="0" title="Wschód">
             <img src="timeSwitchMorning.png">
         </div>
-        <div class="TOD" data-value="1" title="Północ">
+        <div class="TOD" data-value="1" title="Południe">
             <img src="timeSwitchNoon.png">
         </div>
         <div class="TOD" data-value="2" title="Zachód">
@@ -65,6 +61,8 @@
         <p>Rynek Główny w Lublińcu położony jest w centrum starówki Lublińca.<br><br>Oficjalnie Plac Konrada Mańki. Nazwę tę otrzymał w 1945 roku. Odchodzą od niego ulice Edyty Stein, Józefa Lompy, Niedurnego i Cicha. Od strony południowej połączony jest z Małym Rynkiem, czyli Placem Mikołaja Kopernika (są złączone przejściem między kamienicami), a od strony północno-zachodniej z placem Cichym – zwanym Rynkiem Solnym (jest z nim złączony wąskim przejściem). W jego obrębie znajdują się sklepy oraz kawiarnie. Rynek Główny jest miejscem, w którym odbywają się liczne uroczystości i festiwale miejskie. Znajduje się na nim pomnik przyrody i pomnik św. Jana Nepomucena. </p>
         <a href="https://pl.wikipedia.org/wiki/Rynek_G%C5%82%C3%B3wny_w_Lubli%C5%84cu" target="_blank">(Wikipedia)</a>
     </section>
+
+    <div class="walkHint UIButton"></div>
 
     <script type="module" src="script.js"></script>
 </body>

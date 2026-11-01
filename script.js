@@ -4,8 +4,11 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { EXRLoader } from 'three/addons/loaders/EXRLoader.js';
 import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
+import { createWalkMode } from './walkMode.js';
+import { createLoadingProgress } from './loadingProgress.js';
 
 // --- Loaders ---
+const startLoadTime = performance.now();
 
 const textureLoader = new THREE.TextureLoader();
 const exrLoader = new EXRLoader();
@@ -13,22 +16,26 @@ const meshLoader = new GLTFLoader();
 meshLoader.setMeshoptDecoder(MeshoptDecoder);
 const ktx2Loader = new KTX2Loader();
 ktx2Loader.setTranscoderPath('https://unpkg.com/three/examples/jsm/libs/basis/');
+const blobLoader = new THREE.FileLoader();
+blobLoader.setResponseType('blob');
 
-
-function loadMeshAsync(url) {
-    return new Promise((resolve, reject) => meshLoader.load(url, resolve, undefined, reject));
+function loadMeshAsync(url, onProgress) {
+    return new Promise((resolve, reject) => meshLoader.load(url, resolve, onProgress, reject));
 };
-
-function loadExrAsync(url) {
-    return new Promise((resolve, reject) => exrLoader.load(url, resolve, undefined, reject));
+function loadExrAsync(url, onProgress) {
+    return new Promise((resolve, reject) => exrLoader.load(url, resolve, onProgress, reject));
 };
-
-function loadTextureAsync(url) {
-    return new Promise((resolve, reject) => textureLoader.load(url, resolve, undefined, reject));
+function loadKTX2Async(url, onProgress) {
+    return new Promise((resolve, reject) => ktx2Loader.load(url, resolve, onProgress, reject));
 };
-
-function loadKTX2Async(url) {
-    return new Promise((resolve, reject) => ktx2Loader.load(url, resolve, undefined, reject));
+function loadTextureAsync(url, onProgress) {
+    return new Promise((resolve, reject) => {
+        blobLoader.load(url, (blob) => {
+            const objectURL = URL.createObjectURL(blob);
+            const done = (fn) => (arg) => { URL.revokeObjectURL(objectURL); fn(arg); };
+            textureLoader.load(objectURL, done(resolve), undefined, done(reject));
+        }, onProgress, reject);
+    });
 };
 
 // --- Check device performance ---
@@ -44,7 +51,7 @@ function perfBench(n) {
         sum += performance.now() - startTime;
     }
     sum /= n;
-    console.log(`Avg Benchmark time: ${sum}ms`);
+    console.log('Avg Benchmark time:', sum, 'ms');
     return sum;
 }
 
@@ -56,7 +63,7 @@ const scene = new THREE.Scene();
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
 renderer.setSize( window.innerWidth, window.innerHeight );
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.2));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, isDeviceFast ? 3 : 1.2));
 document.body.appendChild( renderer.domElement );
 renderer.toneMapping = THREE.AgXToneMapping;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -68,6 +75,8 @@ camera.position.set(-40, 50, 180);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.target.set(-10, -20 ,10);
+const walk = createWalkMode({ camera, renderer, controls });
+walk.config.lookSpeed = (window.innerWidth>600) ? -0.005 : -0.009;
 
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -75,9 +84,14 @@ window.addEventListener('resize', () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
+let lastFrame = performance.now();
+
 function renderFrame() {
     requestAnimationFrame(renderFrame);
-    controls.update();
+    const now = performance.now();
+    const dt = Math.min((now - lastFrame) / 1000, 0.05);
+    lastFrame = now;
+    if (walk.active) walk.update(dt); else controls.update();
     renderer.render(scene, camera);
 }
 
@@ -88,41 +102,29 @@ const rynekMaterialBase = new THREE.MeshBasicMaterial({
     side: 2
 });
 
-const rynekMaterialSpecular = new THREE.MeshStandardMaterial({
-    color: 0x000000,
-    metalness: 1,
-    envMapIntensity: 4,
-    blending: THREE.AdditiveBlending,
-    depthWrite: false
-});
-
 const rynekMaterial2 = new THREE.MeshBasicMaterial();
 
-let specularEffectMesh;
-let specularColor;
-
-window.mat = rynekMaterialSpecular;
-
 const skyboxData = [
-    { envMapURL: 'assets/qwantani_late_afternoon_puresky_4k.exr', envMap: null, skyRot: -20,   lightMapURL: `assets/lightmap_morning_${isDeviceFast?8:4}K.ktx2`, lightMap: null, specularColor: 0xfff5e6 },
-    { envMapURL: 'assets/qwantani_mid_morning_puresky_4k.exr',    envMap: null, skyRot: -70,  lightMapURL: `assets/lightmap_noon_${isDeviceFast?8:4}K.ktx2`,    lightMap: null, specularColor: 0xfffff9 },
-    { envMapURL: 'assets/qwantani_sunset_puresky_4k.exr',         envMap: null, skyRot: -160,  lightMapURL: `assets/lightmap_sunset_${isDeviceFast?8:4}K.ktx2`,  lightMap: null, specularColor: 0xffd5bb }
+    { envMapURL: 'assets/qwantani_late_afternoon_puresky.exr', envMap: null, skyRot: -20,   lightMapURL: `assets/lightmap_morning_${isDeviceFast?8:4}K.ktx2`, lightMap: null },
+    { envMapURL: 'assets/qwantani_mid_morning_puresky.exr',    envMap: null, skyRot: -70,  lightMapURL: `assets/lightmap_noon_${isDeviceFast?8:4}K.ktx2`,    lightMap: null },
+    { envMapURL: 'assets/qwantani_sunset_puresky.exr',         envMap: null, skyRot: -160,  lightMapURL: `assets/lightmap_sunset_${isDeviceFast?8:4}K.ktx2`,  lightMap: null }
 ];
 
 // --- Download all assets ---
 
+const progress = createLoadingProgress();
+const t = (load) => progress.track(load);
+
 Promise.all([
-    loadExrAsync(skyboxData[0].envMapURL),
-    loadKTX2Async(skyboxData[0].lightMapURL),
-    loadExrAsync(skyboxData[1].envMapURL),
-    loadKTX2Async(skyboxData[1].lightMapURL),
-    loadExrAsync(skyboxData[2].envMapURL),
-    loadKTX2Async(skyboxData[2].lightMapURL),
-    loadMeshAsync('assets/rynek.glb'),
-    loadTextureAsync('Rynek/rynek_color.png'),
-    loadTextureAsync('Rynek/rynek_roughness.png'),
-    loadTextureAsync('Rynek/rynek_mapa.png'),
-    loadTextureAsync('Rynek/rynek_specular.png'),
+    t(p => loadExrAsync(skyboxData[0].envMapURL, p)),
+    t(p => loadKTX2Async(skyboxData[0].lightMapURL, p)),
+    t(p => loadExrAsync(skyboxData[1].envMapURL, p)),
+    t(p => loadKTX2Async(skyboxData[1].lightMapURL, p)),
+    t(p => loadExrAsync(skyboxData[2].envMapURL, p)),
+    t(p => loadKTX2Async(skyboxData[2].lightMapURL, p)),
+    t(p => loadMeshAsync('assets/rynek.glb', p)),
+    t(p => loadTextureAsync('Rynek/rynek_color.png', p)),
+    t(p => loadTextureAsync('Rynek/rynek_mapa.png', p)),
 ])
 .then((list) => {
 
@@ -144,6 +146,8 @@ Promise.all([
     const rynekMainMesh = gltf.getObjectByName('rynek_main');
     const rynekMapMesh = gltf.getObjectByName('rynek_map');
 
+    walk.setCollider(rynekMainMesh);
+
     // Base material
     rynekMaterialBase.map = list[7];
     rynekMaterialBase.map.flipY = false;
@@ -153,44 +157,8 @@ Promise.all([
 
     rynekMainMesh.material = rynekMaterialBase;
 
-    // Specular reflections material
-    rynekMaterialSpecular.roughnessMap = list[8];
-    rynekMaterialSpecular.roughnessMap.flipY = false;
-    rynekMaterialSpecular.envMap = skyboxData[0].envMap;
-    rynekMaterialSpecular.alphaMap = list[10];
-    rynekMaterialSpecular.alphaMap.flipY = false;
-    rynekMaterialSpecular.needsUpdate = true;
-
-    rynekMaterialSpecular.onBeforeCompile = (shader) => {
-        shader.uniforms.envMapTint = { value: new THREE.Color(0,0,0) };
-
-        specularColor = shader.uniforms.envMapTint;
-        specularColor.value.set(skyboxData[0].specularColor);
-
-        shader.fragmentShader = shader.fragmentShader.replace(
-            '#include <envmap_physical_pars_fragment>',
-            `
-            #include <envmap_physical_pars_fragment>
-            uniform vec3 envMapTint;
-            `
-        );
-
-        // Multiply the indirect irradiance / radiance by the tint color
-        shader.fragmentShader = shader.fragmentShader.replace(
-            '#include <lights_fragment_end>',
-            `
-            #include <lights_fragment_end>
-            reflectedLight.indirectDiffuse *= envMapTint;
-            reflectedLight.indirectSpecular *= envMapTint;
-            `
-        );
-    };
-
-    specularEffectMesh = new THREE.Mesh(rynekMainMesh.geometry, rynekMaterialSpecular)
-    if (isDeviceFast) rynekMainMesh.add(specularEffectMesh);
-    
     // Map material
-    rynekMaterial2.map = list[9];
+    rynekMaterial2.map = list[8];
     rynekMaterial2.map.flipY = false;
     rynekMaterial2.map.colorSpace = THREE.SRGBColorSpace;
     rynekMaterial2.lightMap = skyboxData[0].lightMap;
@@ -199,37 +167,33 @@ Promise.all([
     // Background texture
     scene.background = skyboxData[0].envMap;
     scene.backgroundRotation.y = Math.PI / 180 * skyboxData[0].skyRot;
+    progress.finish();
 
     // Hide loading screen
     setTimeout(() => {
         document.getElementById('loadingScreen').style.opacity = '0';
+        document.getElementById('loadingScreen').style.pointerEvents = 'none';
 
         setTimeout(() => {
             document.getElementById('loadingScreen').style.display = 'none';
         }, 1000);
-    });
+    }, 500);
 
     renderFrame();
 
-    // specularColor fix
-    specularEffectMesh.visible = false;
-    window.spec = specularColor;
+    console.log('Total loading time:', performance.now() - startLoadTime, 'ms');
 });
 
 
-// Quality switch
-document.querySelectorAll('.quality').forEach(el => {
-    el.addEventListener('mousedown', () => {
-        const i = el.dataset.value;
+// Mode switch
+let walkModeON = false;
 
-        specularEffectMesh.visible = (i==1) ? true : false;
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, (i==1) ? 3 : 1.2));
+document.querySelector('.viewModeButton').addEventListener('mousedown', () => {
+    walkModeON = !walkModeON;
+    
+    walkModeON ? walk.start() : walk.exit();
 
-        setTimeout(() => {
-            document.querySelector(".qualityHandle").style.transform = `translateX(${i*50}px)`;
-            document.querySelector(".qualityHandle").textContent = (i==1) ? 'HD' : 'SD';
-        }, 50); 
-    });
+    document.querySelector('.viewModeButton span').classList.toggle('active');
 });
 
 // TOD switch
@@ -240,13 +204,8 @@ document.querySelectorAll('.TOD').forEach(el => {
         scene.background = skyboxData[i].envMap;
         scene.backgroundRotation.y = Math.PI / 180 * skyboxData[i].skyRot;
 
-        specularColor.value.set(skyboxData[i].specularColor);
-
-        rynekMaterialBase.lightMap = skyboxData[i].lightMap;
-        rynekMaterialBase.needsUpdate = true;
-        rynekMaterial2.lightMap = skyboxData[i].lightMap;
-        rynekMaterial2.needsUpdate = true;
-        rynekMaterialSpecular.envMapRotation.y = Math.PI / 180 * skyboxData[i].skyRot;
+        rynekMaterialBase.lightMap = rynekMaterial2.lightMap = skyboxData[i].lightMap;
+        rynekMaterialBase.needsUpdate = rynekMaterial2.needsUpdate = true;
 
         setTimeout(() => {
             document.querySelector(".TODhandle").style.transform = `translateX(${i*50}px)`;
