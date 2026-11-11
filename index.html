@@ -3,27 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="YQT6P2iniMZD8s2DBuQNu4vmsoWQILUkwpG_hn5gpOE">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="style.css">
     <script type="importmap">
     {
         "imports": {
-        "three": "https://unpkg.com/three/build/three.module.js",
-        "three/addons/": "https://unpkg.com/three/examples/jsm/"
+        "three": "https://unpkg.com/three@0.187.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.187.0/examples/jsm/"
         }
     }
     </script>
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
-        "@type": "WebSite",
-        "name": "Lubliniec w 3D",
-        "url": "https://rynek-lubliniec.github.io"
+        "@type": "TouristAttraction",
+        "name": "Rynek w Lublińcu - Model 3D",
+        "description": "Interaktywna wizualizacja 3D rynku i starówki w Lublińcu.",
+        "url": "https://rynek-lubliniec.github.io",
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Lubliniec",
+            "addressCountry": "PL"
+        }
     }
     </script>
-    <title>Rynek w Lublińcu - Wizualizacja 3D</title>
-    <meta name="description" content="Zobacz interaktywną wizualizację 3D rynku w Lublińcu. Odkryj architekturę i układ urbanistyczny miasta bez wychodzenia z domu!">
+    <title>Model 3D Rynku w Lublińcu - Wirtualny Spacer</title>
+    <meta name="description" content="Odkryj interaktywny model 3D rynku i starówki w Lublińcu. Zobacz zabytkowe centrum miasta bezpośrednio w przeglądarce w technologii 3D.">
+    <meta property="og:title" content="Model 3D Rynku w Lublińcu">
+    <meta property="og:description" content="Przeglądaj interaktywną wizualizację 3D rynku w Lublińcu.">
+    <meta property="og:image" content="preview.jpg">
+    <meta property="og:url" content="https://rynek-lubliniec.github.io">
 </head>
 <body>
     <div id="loadingScreen">
@@ -31,9 +41,9 @@
         <div class="loadingBar"><div class="loadingBarFill"></div></div>
     </div>
 
-    <button class="viewModeButton UIButton"><span>Widok z ziemi</span></button>
+    <div class="viewModeButton UIElement UIButton"><span>Widok z ziemi</span></div>
 
-    <div class="todSwitch UIButton">
+    <div class="todSwitch UIElement UIButton">
         <div class="TOD" data-value="0" title="Wschód">
             <img src="timeSwitchMorning.png">
         </div>
@@ -50,7 +60,7 @@
         </div>
     </div>
 
-    <div class="menuButton UIButton">
+    <div class="menuButton UIElement UIButton">
         <div class="ham1"></div>
         <div class="ham2"></div>
         <div class="ham3"></div>
@@ -64,6 +74,13 @@
 
     <div class="walkHint UIButton"></div>
 
-    <script type="module" src="script.js"></script>
+    <div class="navTips UIElement">
+    </div>
+
+    <div class="fps UIElement"></div>
+
+    <div class="UIHint UIElement"></div>
+
+    <script type="module" src="main.js"></script>
 </body>
 </html>
