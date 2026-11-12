@@ -17,7 +17,7 @@ varying float vRand;
 float heightFrac(float time) {
     float a = time / uPulsePeriod;
     float a2 = (time + uPulsePhase) / uPulsePeriod;
-    return min(abs(sin(a) * 4.0) - 1.0, 1.0) * (0.8 + sin(uPulsePhase * 6.0 * a2)* 0.1);
+    return min(abs(sin(a) * 4.0) - 1.0, 1.0) * (0.9 + sin(uPulsePhase * 6.0 * a2)* 0.05);
 }
 
 void main() {
@@ -87,14 +87,14 @@ const _size = new THREE.Vector2();
 
 export function createFountain({
     position = new THREE.Vector3(),
-    maxHeight = (Math.random() * 0.2)+1,
+    maxHeight = (Math.random() * 0.2) + 1,
     heightPeriod = 10,
     pulsePhase = Math.random() * 4,
     gravity = 9.81,
     spreadDeg = 3,
     nozzleHeight = 0,
     nozzleRadius = 0.03,
-    dropSize = 0.017,
+    dropSize = 0.0175,
     count = 5000,
     colorClear = 0x4f90ab,
     colorFoam = 0xffffff,

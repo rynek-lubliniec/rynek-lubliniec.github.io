@@ -135,7 +135,7 @@ const rynekMat2 = new THREE.MeshBasicMaterial();
 
 const skyboxData = [
     { envMapURL: 'assets/qwantani_late_afternoon_puresky.ktx2', envMap: null, skyRot: 2,   lightMapURL: `assets/lightmap_morning_${isDeviceFast?8:4}K.ktx2`, lightMap: null },
-    { envMapURL: 'assets/qwantani_mid_morning_puresky.ktx2',    envMap: null, skyRot: -70,  lightMapURL: `assets/lightmap_morning_${isDeviceFast?4:4}K.ktx2`,    lightMap: null },
+    { envMapURL: 'assets/qwantani_mid_morning_puresky.ktx2',    envMap: null, skyRot: -70,  lightMapURL: `assets/lightmap_noon_${isDeviceFast?8:4}K.ktx2`,    lightMap: null },
     { envMapURL: 'assets/qwantani_sunset_puresky.ktx2',         envMap: null, skyRot: -160,  lightMapURL: `assets/lightmap_sunset_${isDeviceFast?8:4}K.ktx2`,  lightMap: null }
 ];
 
@@ -193,11 +193,15 @@ Promise.all([
 
     rynekMat1.onBeforeCompile = (shader) => {
         shader.uniforms.uTime = { value: 0 };
+        shader.uniforms.uWindDir = { value: new THREE.Vector2(1, 0.3).normalize() };
+        shader.uniforms.uWindStrength = { value: 0.3 };
         rynekMat1.userData.shader = shader;
 
         shader.vertexShader = `
             attribute float _leaves;
             uniform float uTime;
+            uniform vec2 uWindDir;
+            uniform float uWindStrength;
         ` + shader.vertexShader;
 
         shader.vertexShader = shader.vertexShader.replace(
@@ -205,12 +209,17 @@ Promise.all([
             `
             #include <begin_vertex>
 
-            float leaves = _leaves; 
-            float waveX = sin(uTime * 2.5 + position.x * 0.2 + position.y * 0.2 + position.z * 0.2) * 0.04;
-            float waveZ = cos(uTime * 2.5 + position.x * 0.2 + position.y * 0.2 + position.z * 0.2) * 0.04;
-            
-            transformed.x += waveX * leaves;
-            transformed.z += waveZ * leaves;
+            float phase   = dot(position.xz, uWindDir) * 1.5;
+            float sway    = sin(uTime * 2.0 + phase);
+            float gust    = sin(uTime * 0.7 + phase * 0.3) * 0.5 + 0.5;
+            float flutter = sin(uTime * 9.0 + position.x * 7.0 + position.z * 5.0);
+
+            float strength = uWindStrength * (0.4 + 0.6 * gust);
+            vec2 perp = vec2(-uWindDir.y, uWindDir.x);
+
+            vec2 offset = uWindDir * (0.6 + 0.4 * sway) * strength + perp * flutter * 0.15 * strength;
+
+            transformed.xz += offset * _leaves;
             `
         );
     };
