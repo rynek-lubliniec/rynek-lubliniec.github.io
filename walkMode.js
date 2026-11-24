@@ -261,7 +261,7 @@ export function createWalkMode({ camera, renderer, controls, options = {} }) {
     const TIPS = {
         orbit: {
             rows: isTouch
-                ? [['Drag', 'Obróć'], ['Pinch', 'Przybliż / Oddal'], ['Dwa palce', 'Przesuń']]
+                ? [['Jeden palec', 'Obróć'], ['Uszczypnięcie', 'Przybliż / Oddal'], ['Dwa palce', 'Przesuń']]
                 : [[LMBIcon, 'Obróć'], [ScrollIcon, 'Przybliż / Oddal'], [RMBIcon, 'Przesuń']],
         },
         walk: {

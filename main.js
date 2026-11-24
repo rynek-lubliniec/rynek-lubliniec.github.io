@@ -54,8 +54,7 @@ function perfBench(n) {
     return sum;
 }
 
-//const isDeviceFast = perfBench(10) < 25;
-const isDeviceFast = true;
+const isDeviceFast = perfBench(10) < 25;
 
 // --- Scene & Rendering ---
 const scene = new THREE.Scene();
@@ -112,10 +111,10 @@ const fountainSound = new THREE.PositionalAudio(listener);
 audioLoader.load('./audio/fountain.mp3', function(buffer) {
     fountainSound.setBuffer(buffer);
     fountainSound.setRefDistance(5);
-    fountainSound.setMaxDistance(10);  
-    fountainSound.setRolloffFactor(1); 
+    fountainSound.setMaxDistance(5);  
+    fountainSound.setRolloffFactor(3); 
     fountainSound.setLoop(true);
-    fountainSound.setVolume(3);
+    fountainSound.setVolume(5);
     fountainSound.position.set(-22, 2.8, 4.5);
 });
 
@@ -134,9 +133,9 @@ const rynekMat1 = new THREE.MeshBasicMaterial({
 const rynekMat2 = new THREE.MeshBasicMaterial();
 
 const skyboxData = [
-    { envMapURL: 'assets/qwantani_late_afternoon_puresky.ktx2', envMap: null, skyRot: 2,   lightMapURL: `assets/lightmap_morning_${isDeviceFast?8:4}K.ktx2`, lightMap: null },
-    { envMapURL: 'assets/qwantani_mid_morning_puresky.ktx2',    envMap: null, skyRot: -70,  lightMapURL: `assets/lightmap_noon_${isDeviceFast?8:4}K.ktx2`,    lightMap: null },
-    { envMapURL: 'assets/qwantani_sunset_puresky.ktx2',         envMap: null, skyRot: -160,  lightMapURL: `assets/lightmap_sunset_${isDeviceFast?8:4}K.ktx2`,  lightMap: null }
+    { envMapURL: 'assets/qwantani_late_afternoon_puresky.ktx2', envMap: null, skyRot: 2,   lightMapURL: `assets/lightmap_morning_${isDeviceFast?8:8}K.ktx2`, lightMap: null },
+    { envMapURL: 'assets/qwantani_mid_morning_puresky.ktx2',    envMap: null, skyRot: -70,  lightMapURL: `assets/lightmap_noon_${isDeviceFast?8:8}K.ktx2`,    lightMap: null },
+    { envMapURL: 'assets/qwantani_sunset_puresky.ktx2',         envMap: null, skyRot: -160,  lightMapURL: `assets/lightmap_sunset_${isDeviceFast?8:8}K.ktx2`,  lightMap: null }
 ];
 
 // --- Download all assets ---
@@ -248,9 +247,6 @@ Promise.all([
 // --- Rendering ---
 let lastFrame = performance.now();
 
-const fpsEl = document.querySelector(".fps");
-const fpsArray = [];
-
 function renderFrame() {
     requestAnimationFrame(renderFrame);
     const now = performance.now();
@@ -262,11 +258,6 @@ function renderFrame() {
     if (rynekMat1.userData.shader) {
         rynekMat1.userData.shader.uniforms.uTime.value += dt;
     }
-
-    // FPS counter
-    fpsArray.push(now);
-    while (now - fpsArray[0] > 1000) fpsArray.shift();
-    fpsEl.textContent = 'FPS: ' + fpsArray.length;
 
     if (walk.active) walk.update(dt); else controls.update();
 
